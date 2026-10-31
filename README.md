@@ -20,10 +20,10 @@ Copy what you want into yours, or add this repository as a gallery index (below)
 **As a gallery index** (recommended, one tap per extension):
 
 1. Menu → Extensions → Installed, and set the index to `krittaprot/pi-pocket-extensions`.
-2. Discover lists the three entries below. Install, then turn the extension on. Each one starts off.
+2. Discover lists the five entries below. Install, then turn the extension on. Each one starts off.
 
-`annotate`, `dictation`, and `lsp` have gallery entries. The other three do not, for the reasons in
-[Not in the gallery yet](#not-in-the-gallery-yet); install those by hand.
+`annotate`, `dictation`, `extensions-button`, `lsp`, and `projects` have gallery entries. `mcp-servers` does
+not, for the reason in [Not in the gallery yet](#not-in-the-gallery-yet); install that one by hand.
 
 **By hand:** copy `<name>.ts` and, where there is one, the folder `<name>/` (or the file `<name>.js`)
 into `~/.pi-pocket/extensions/`. Then turn the extension on in Menu → Extensions.
@@ -33,18 +33,25 @@ into `~/.pi-pocket/extensions/`. Then turn the extension on in Menu → Extensio
 - `mcp-servers` gives Pi one tool for each tool of each server, so what it declares is different on
   every machine, and the index refuses a list of more than 100 tools. It also keeps a tool-list cache
   in `mcp-servers/cache.json`, which is not in this repository.
-- `extensions-button` and `projects` have browser modules that import the app's own files by path
-  (`/store.js`, `/theme.js`, `/sessions.js`). Those are internal to Pi Pocket, so the check that a
-  drop-in stands on its own refuses them. They work in the version they were written for.
 
-Please do not add these to the official index as they are.
+`extensions-button` and `projects` needed a refactor before they could have entries: their browser
+modules imported the app's own files (`/store.js`, `/theme.js`, `/sessions.js`), and the gallery
+refuses a module that does not stand on its own. They import nothing of the app's now:
+
+- The button opens the app's Extensions sheet through the app's own Menu (in a conversation) or
+  Launcher (on the home screen), as a person does.
+- A project's chat rows pin, mark unread, and archive through the app's own button of that session
+  row, or through the two lists the app keeps in this browser, `pocket.pinned` and `pocket.unread`.
+  A session that the tab's list does not draw takes the second way, so the app's own list shows the
+  change at its next load.
 
 ## Files that are not here
 
 These are made on the machine that runs the extension, and are not worth backing up:
 
 - `mcp-servers/cache.json`: the list of each server's tools.
-- `projects/state.json`: the projects, and which session is in which.
+- `projects/state.json` (now `projects-state/state.json`): the projects, and which session is in
+  which. It is beside the module's files and not among them, so an installed copy starts empty.
 - `lsp-tools/`: the TypeScript and language servers that `lsp` installs. It needs `npm install` and
   is 48 MB. The module works without it, through the project's own TypeScript or `npx`.
 - `_pocket.d.ts`: Pi Pocket's types, which `lsp.ts` imports with `import type`. A symlink to

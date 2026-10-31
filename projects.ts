@@ -24,7 +24,10 @@ export const pocketApi = 1;
 
 const HOME = homedir();
 const HERE = dirname(import.meta.filename);
-const STATE = join(HERE, "projects", "state.json");
+// The projects are this machine's: they sit in a folder of their own, beside the module's files and not among them, so
+// the module can be copied, shared, or installed from the gallery without them. `projects/` is where they were first.
+const STATE = join(HERE, "projects-state", "state.json");
+const OLD_STATE = join(HERE, "projects", "state.json");
 const OLD_QUICK_NEW = join(HERE, "quick-new", "state.json");
 const MAX_DIRS = 500;
 const MAX_INSTRUCTIONS = 20_000;
@@ -84,7 +87,7 @@ function pretty(path: string): string {
 
 function load(): State {
     try {
-        const s = JSON.parse(readFileSync(STATE, "utf8"));
+        const s = JSON.parse(readFileSync(existsSync(STATE) ? STATE : OLD_STATE, "utf8"));
         return {
             newIn: s.newIn === "folder" ? "folder" : "scratch",
             defaultFolder: typeof s.defaultFolder === "string" ? s.defaultFolder : HOME,
@@ -101,6 +104,8 @@ function load(): State {
 }
 
 let state = load();
+
+// The file moves to `projects-state/` at the first save: the old one stays where it is, unread.
 
 function save() {
     mkdirSync(dirname(STATE), { recursive: true });

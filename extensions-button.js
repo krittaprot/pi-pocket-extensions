@@ -1,8 +1,8 @@
 // Extensions button, the browser part: a rail button that opens the app's Extensions manager.
 //
 // The rail is drawn by the app, which puts modules' buttons above its own bottom ones (Devices, Providers, Theme,
-// you). To sit below the theme button, this module hides the button the app draws and draws its own at that place.
-// A button of its own is not touched by the app's drawing, so it cannot double up or leave a copy behind.
+// you). A CSS `order` puts this button where the person wants it; nothing in the page is added, moved, or hidden, and
+// the module imports nothing of the app's.
 export const pocketApi = 1;
 
 /** Blocks, as an app's extensions are drawn: two overlapping tiles. One path, as the app's Icon draws one. */
@@ -11,43 +11,58 @@ const BLOCKS =
     "M15 2h5a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1h-5a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1z";
 
 export default function setup(pocket) {
-    /** The app's own module for opening a sheet: the same live module the app loaded. */
-    let appStore = null;
-    const loadStore = () =>
-        (appStore ??= import("/store.js").then(
-            (m) => m,
-            () => ({}),
-        ));
+    /**
+     * The app draws the Extensions sheet, and it gives no public way to open one of its own sheets (`pocket.openSheet`
+     * opens this module's). So the button walks there the way a person does, in two steps, and taps the app's own row:
+     *
+     * - In a conversation, the top bar's Menu button, then the menu's row "Extensions".
+     * - On the home screen, which has no Menu button, the "Launcher" button, then its row "Extensions".
+     *
+     * The rows are found by what they say, never by a class of the app's. This module's own row in the launcher says
+     * "Extensions…", so it is never the one that is tapped. A row shows for a frame at most.
+     */
+    const EXTENSIONS_ROW = (each) => {
+        const label = (each.getAttribute("aria-label") ?? each.textContent ?? "").trim();
 
-    /** Last resort: open the menu and click its "Extensions" row. */
-    function throughTheMenu() {
-        const part = (name) => document.querySelector(`[data-part="${name}"]`);
-        const menu =
-            part("menu") ??
-            document.querySelector('button[aria-label="Menu" i], button[title="Menu" i]') ??
-            document.querySelector('[data-part="topbar"] button:last-of-type');
-        menu?.click();
-        setTimeout(() => {
-            const rows = [...document.querySelectorAll("button, a, [role=menuitem], [role=button]")];
-            const row = rows.find((r) => /^extensions$/i.test((r.textContent ?? "").trim()));
-            if (row) row.click();
-            else pocket.notify?.("warning", "Extensions is not in the menu yet. Open it again from Menu.");
-        }, 120);
-    }
+        // The app's own rows say just that; a row with a hint after it, or another label, is not this one.
+        return /^extensions$/i.test(label.split(",")[0].trim());
+    };
+    const MENU_ROW = (each) => /^extensions(\s|$)/i.test((each.textContent ?? "").trim());
 
-    async function openExtensions() {
-        const m = await loadStore();
-        if (typeof m.openSheet === "function") {
-            try {
-                m.openSheet({ type: "extensions" });
+    function openExtensions() {
+        const menu = document.querySelector('[data-part="topbar"] button[aria-label="Menu" i]');
+        const launcher = [...document.querySelectorAll('[data-part="home-actions"] button')].find((each) =>
+            /^launcher/i.test((each.textContent ?? "").trim()),
+        );
+
+        if (menu && menu.getAttribute("aria-expanded") !== "true") {
+            menu.click();
+        } else if (menu === null) {
+            if (!launcher) {
+                pocket.notify?.("warning", "Open Extensions from the Menu: this page has no button for it.");
                 return;
-            } catch {}
+            }
+            launcher.click();
         }
-        throughTheMenu();
+
+        let tries = 0;
+        const tapRow = () => {
+            const row =
+                [...document.querySelectorAll('[data-part="launcher-row"]')].find(EXTENSIONS_ROW) ??
+                [...document.querySelectorAll('[data-part="sheet-body"] button.list-item')].find(MENU_ROW);
+
+            if (row) {
+                row.click();
+                return;
+            }
+
+            if (++tries < 30) requestAnimationFrame(tapRow);
+            else pocket.notify?.("warning", "Extensions did not open. Try again from the Menu.");
+        };
+        requestAnimationFrame(tapRow);
     }
 
-    // The app draws this button (it is what Appearance → Layout lists); the stylesheet below hides it, and the button
-    // drawn here takes its place. Keep it registered: without it, a version that cannot draw its own has nothing.
+    // Pocket draws this button, from this registration (it is what Appearance → Layout lists).
     pocket.rail({ id: "extensions", title: "Extensions", iconPath: BLOCKS, run: openExtensions });
 
     // ---------- Its place: below the theme button, by order alone ----------

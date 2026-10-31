@@ -802,76 +802,86 @@ export default function setup(pocket) {
     const SHOW = 5;
 
     // ---------- The app's own row actions ----------
-    // Pin and mark-unread live in this browser (localStorage, and the app's store); archive goes to the server. The
-    // app's modules are at the site's root and already loaded, so importing one gives the same live module. They are not
-    // a public API: a version that changes them takes the fallbacks here, which still work.
+    // Pin and mark-unread belong to this browser: the app keeps them in `pocket.pinned` and `pocket.unread`, and writes
+    // both on every change. This module imports nothing of the app: it reads those two lists, and for a row that the
+    // app draws it taps the app's own button, so the app's list and its state change with it. Archive goes to the
+    // server, as the app's own archive does.
+    const PINNED_KEY = "pocket.pinned";
+    const UNREAD_KEY = "pocket.unread";
 
-    let appApi = null;
-    async function appApi_() {
-        if (appApi) return appApi;
-        const [storeMod, themeMod, sessionsMod] = await Promise.all([
-            import("/store.js").catch(() => null),
-            import("/theme.js").catch(() => null),
-            import("/sessions.js").catch(() => null),
-        ]);
-        appApi = {
-            store: storeMod?.store ?? null,
-            setUnread: storeMod?.setUnread ?? null,
-            updateSession: storeMod?.actions?.updateSession ?? null,
-            isPinned: themeMod?.isPinned ?? null,
-            togglePin: themeMod?.togglePin ?? null,
-            setArchived: sessionsMod?.setArchived ?? null,
-        };
-        return appApi;
+    /** One of those lists, as the app stores it: ids, or nothing when it is not there or unreadable. */
+    function storedIds(key) {
+        try {
+            const list = JSON.parse(localStorage.getItem(key) ?? "[]");
+            return Array.isArray(list) ? list : [];
+        } catch {
+            return [];
+        }
     }
-    const pinnedIds = () => new Set(appApi?.store?.state?.pinned ?? []);
-    const unreadIds = () => new Set(appApi?.store?.state?.unread ?? []);
+
+    const pinnedIds = () => new Set(storedIds(PINNED_KEY));
+    const unreadIds = () => new Set(storedIds(UNREAD_KEY));
+
+    /** Sets one of those lists, with `id` in it or out of it. */
+    function storeIds(key, list) {
+        try {
+            localStorage.setItem(key, JSON.stringify(list));
+        } catch {
+            // A private window refuses it: the change lasts until the page reloads.
+        }
+    }
+
+    /** The list with `id` in it, or out of it. */
+    const withId = (list, id, want) =>
+        want ? [...new Set([...list, id])] : list.filter((each) => each !== id);
+
+    /**
+     * Taps the app's pin or unread button of that session, when the app draws the row: its handler stores the change and
+     * redraws its list. False when the row is not there (a session outside the tab's list, or a filtered one).
+     */
+    function appRowButton(id, kind) {
+        const row = document.querySelector(
+            `[data-part="session-list"] [data-part="session-row"][data-id="${Number(id)}"]`,
+        );
+        const button = row?.querySelector(kind === "pin" ? ".session-pin" : ".session-unread");
+        if (!button) return false;
+        button.click();
+        return true;
+    }
+
+    /**
+     * Changes one of the two lists. A row the app draws is tapped, so the app's list follows at once; and the stored list
+     * is then made to say what was asked, for the time the app's own copy is behind the stored one.
+     */
+    function setFlag(key, id, kind, want) {
+        const ids = () => new Set(storedIds(key));
+        const tapped = appRowButton(id, kind);
+        if (!tapped || ids().has(id) !== want) storeIds(key, withId(storedIds(key), id, want));
+    }
 
     const actions2 = {
         async pin(id) {
-            const a = await appApi_();
-            if (a.togglePin) a.togglePin(id);
-            else {
-                const key = "pocket.pinned";
-                const list = JSON.parse(localStorage.getItem(key) ?? "[]");
-                localStorage.setItem(key, JSON.stringify(list.includes(id) ? list.filter((x) => x !== id) : [...list, id]));
-            }
+            setFlag(PINNED_KEY, id, "pin", !pinnedIds().has(id));
             blockSig = "";
             drawBlock();
         },
         async read(id) {
-            const a = await appApi_();
-            const unread = unreadIds().has(id);
-            if (a.setUnread) a.setUnread(id, !unread);
-            else {
-                const key = "pocket.unread";
-                const list = JSON.parse(localStorage.getItem(key) ?? "[]");
-                localStorage.setItem(key, JSON.stringify(!unread ? [...new Set([...list, id])] : list.filter((x) => x !== id)));
-            }
+            setFlag(UNREAD_KEY, id, "read", !unreadIds().has(id));
             blockSig = "";
             drawBlock();
         },
         async archive(id) {
-            const a = await appApi_();
-            if (a.setArchived) a.setArchived([id], true);
-            else if (a.updateSession) await a.updateSession(id, { archived: true });
-            else {
-                const r = await fetch(`/api/sessions/${id}`, {
-                    method: "POST",
-                    headers: { "X-Pocket": "1", "content-type": "application/json" },
-                    body: JSON.stringify({ archived: true }),
-                });
-                if (!r.ok) throw new Error(`the server answered ${r.status}`);
-            }
+            const r = await fetch(`/api/sessions/${id}`, {
+                method: "POST",
+                headers: { "X-Pocket": "1", "content-type": "application/json" },
+                body: JSON.stringify({ archived: true }),
+            });
+            if (!r.ok) throw new Error(`the server answered ${r.status}`);
             blockSig = "";
             drawBlock();
             setTimeout(reload, 500);
         },
     };
-    appApi_().then(() => {
-        blockSig = "";
-        drawBlock();
-    });
 
     /** A filtered project with no chats: say so, and give the two things a person wants next. */
     function emptyCard(project) {

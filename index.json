@@ -1,0 +1,169 @@
+{
+  "format": 1,
+  "name": "krittaprot's Pi Pocket extensions",
+  "repo": "https://github.com/krittaprot/pi-pocket-extensions",
+  "extensions": [
+    {
+      "name": "annotate",
+      "title": "Annotate",
+      "description": "Annotate: draw on an image, then tell Pi about it. Adds a button to the message box that opens a full screen page, where a person circles what to change or asks about, writes a note, and \"Use in message\" puts the marked-up image and the note into the message box, ready to send.",
+      "tags": [
+        "images",
+        "annotation",
+        "vision",
+        "ui"
+      ],
+      "author": {
+        "name": "Ode",
+        "github": "krittaprot"
+      },
+      "version": "1.0.0",
+      "source": {
+        "repo": "krittaprot/pi-pocket-extensions",
+        "commit": "104c760e8f63c0152f7e776436cea18e846f6e64",
+        "path": ""
+      },
+      "files": [
+        {
+          "name": "annotate.ts",
+          "sha256": "abed8228b1a04b3489cbbf01338cd72e2726d92a294e166ea79b4b54e65cf91e",
+          "size": 6333
+        },
+        {
+          "name": "annotate/annotate.css",
+          "sha256": "4096b45753f38a4f5e51357747d7143dcd43580eb9e8fd5d27f61aff88c5f414",
+          "size": 8191
+        },
+        {
+          "name": "annotate/index.js",
+          "sha256": "d296414ee8b55024bdf2ae7006e8b738c39344d183e3a7171c3e320a61782670",
+          "size": 32919
+        }
+      ],
+      "pocketApi": 1,
+      "minPocket": "0.27.0",
+      "declares": {
+        "extensions": [],
+        "tools": [],
+        "readOnlyTools": [],
+        "hooks": [],
+        "sections": [],
+        "wraps": [],
+        "routes": [
+          "POST save",
+          "GET recent"
+        ],
+        "client": "owner",
+        "access": "owner"
+      }
+    },
+    {
+      "name": "dictation",
+      "title": "Dictation",
+      "description": "Claude-style streaming dictation for the message box: words appear as you speak (a local whisper.cpp model or any cloud speech model), and when you stop, an LLM of your choice corrects the whole text using the conversation as context.",
+      "tags": [
+        "dictation",
+        "speech",
+        "voice",
+        "audio"
+      ],
+      "author": {
+        "name": "Ode",
+        "github": "krittaprot"
+      },
+      "version": "1.0.0",
+      "source": {
+        "repo": "krittaprot/pi-pocket-extensions",
+        "commit": "104c760e8f63c0152f7e776436cea18e846f6e64",
+        "path": ""
+      },
+      "files": [
+        {
+          "name": "dictation.ts",
+          "sha256": "faeb3c77437dc62305ffb0a7ac4917e008fcff22243ebc5011deaf5c80dc56ef",
+          "size": 32558
+        },
+        {
+          "name": "dictation/index.js",
+          "sha256": "ac10be65b7e1b758422918ce17610269c1ef82d0068a8f348795b3408b2926ae",
+          "size": 10182
+        }
+      ],
+      "pocketApi": 2,
+      "minPocket": "0.27.0",
+      "declares": {
+        "extensions": [
+          "dictation"
+        ],
+        "tools": [],
+        "readOnlyTools": [],
+        "hooks": [],
+        "sections": [],
+        "wraps": [],
+        "routes": [
+          "POST warm",
+          "POST push"
+        ],
+        "client": "owner",
+        "access": "steer"
+      }
+    },
+    {
+      "name": "lsp",
+      "title": "Language servers",
+      "description": "Language servers for Pi: type errors after each edit, and exact answers about symbols (definitions, references, hover, workspace symbols) for 26 languages.",
+      "tags": [
+        "lsp",
+        "language-server",
+        "typescript",
+        "diagnostics",
+        "code"
+      ],
+      "author": {
+        "name": "Ode",
+        "github": "krittaprot"
+      },
+      "version": "1.0.0",
+      "source": {
+        "repo": "krittaprot/pi-pocket-extensions",
+        "commit": "104c760e8f63c0152f7e776436cea18e846f6e64",
+        "path": ""
+      },
+      "files": [
+        {
+          "name": "lsp.ts",
+          "sha256": "fa46833c15f213867a11697771f20bdb630e06a6a858141d11b6c2035cf73a34",
+          "size": 64379
+        }
+      ],
+      "pocketApi": 2,
+      "minPocket": "0.27.0",
+      "declares": {
+        "extensions": [
+          "lsp"
+        ],
+        "tools": [
+          "lsp_diagnostics",
+          "lsp_definition",
+          "lsp_references",
+          "lsp_hover",
+          "lsp_symbols"
+        ],
+        "readOnlyTools": [],
+        "hooks": [
+          "afterTool"
+        ],
+        "sections": [
+          "language_servers"
+        ],
+        "wraps": [],
+        "routes": [],
+        "client": null,
+        "access": "owner",
+        "commands": [
+          "conversation lsp-servers"
+        ]
+      }
+    }
+  ]
+}

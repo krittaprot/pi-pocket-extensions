@@ -20,7 +20,7 @@
       "version": "1.0.0",
       "source": {
         "repo": "krittaprot/pi-pocket-extensions",
-        "commit": "104c760e8f63c0152f7e776436cea18e846f6e64",
+        "commit": "23f773a8c96779b5d317af898cb0c58bcfba8417",
         "path": ""
       },
       "files": [
@@ -74,7 +74,7 @@
       "version": "1.0.0",
       "source": {
         "repo": "krittaprot/pi-pocket-extensions",
-        "commit": "104c760e8f63c0152f7e776436cea18e846f6e64",
+        "commit": "23f773a8c96779b5d317af898cb0c58bcfba8417",
         "path": ""
       },
       "files": [
@@ -109,6 +109,52 @@
       }
     },
     {
+      "name": "extensions-button",
+      "title": "Extensions button",
+      "description": "Extensions button: a rail button in the quick access sidebar that opens the Extensions manager in one tap, instead of the menu's last rows.",
+      "tags": [
+        "rail",
+        "extensions",
+        "button",
+        "ui"
+      ],
+      "author": {
+        "name": "Ode",
+        "github": "krittaprot"
+      },
+      "version": "1.0.0",
+      "source": {
+        "repo": "krittaprot/pi-pocket-extensions",
+        "commit": "23f773a8c96779b5d317af898cb0c58bcfba8417",
+        "path": ""
+      },
+      "files": [
+        {
+          "name": "extensions-button.ts",
+          "sha256": "b7eb031578aa39890b107fa5a811c28a2bdc52ad05cfcbf610f16120ad16d12d",
+          "size": 754
+        },
+        {
+          "name": "extensions-button.js",
+          "sha256": "ef337d93bb686140d34c3ce49b94d649b027496676036e03fafc066aca715b5b",
+          "size": 4476
+        }
+      ],
+      "pocketApi": 1,
+      "minPocket": "0.27.0",
+      "declares": {
+        "extensions": [],
+        "tools": [],
+        "readOnlyTools": [],
+        "hooks": [],
+        "sections": [],
+        "wraps": [],
+        "routes": [],
+        "client": "owner",
+        "access": "owner"
+      }
+    },
+    {
       "name": "lsp",
       "title": "Language servers",
       "description": "Language servers for Pi: type errors after each edit, and exact answers about symbols (definitions, references, hover, workspace symbols) for 26 languages.",
@@ -126,7 +172,7 @@
       "version": "1.0.0",
       "source": {
         "repo": "krittaprot/pi-pocket-extensions",
-        "commit": "104c760e8f63c0152f7e776436cea18e846f6e64",
+        "commit": "23f773a8c96779b5d317af898cb0c58bcfba8417",
         "path": ""
       },
       "files": [
@@ -163,6 +209,70 @@
         "commands": [
           "conversation lsp-servers"
         ]
+      }
+    },
+    {
+      "name": "projects",
+      "title": "Projects",
+      "description": "Projects: Claude-style projects for Pi Pocket. A project has a name, folders, and instructions. A session can work in more than one folder. New starts a session at once.",
+      "tags": [
+        "projects",
+        "sessions",
+        "folders",
+        "organisation"
+      ],
+      "author": {
+        "name": "Ode",
+        "github": "krittaprot"
+      },
+      "version": "1.0.0",
+      "source": {
+        "repo": "krittaprot/pi-pocket-extensions",
+        "commit": "23f773a8c96779b5d317af898cb0c58bcfba8417",
+        "path": ""
+      },
+      "files": [
+        {
+          "name": "projects.ts",
+          "sha256": "c97cc6bca37bdf87eedaec3b2bbcd8dadd360ab973df2391be6b5cbb1424cf47",
+          "size": 21820
+        },
+        {
+          "name": "projects.js",
+          "sha256": "db99066edce8e4835f8e1add87e8e27f71981d4c9edcef205435a15872a7a3e2",
+          "size": 63831
+        }
+      ],
+      "pocketApi": 1,
+      "minPocket": "0.27.0",
+      "declares": {
+        "extensions": [
+          "projects"
+        ],
+        "tools": [],
+        "readOnlyTools": [],
+        "hooks": [
+          "beforeTool"
+        ],
+        "sections": [
+          "project"
+        ],
+        "wraps": [],
+        "routes": [
+          "GET state",
+          "POST default-folder",
+          "POST new-in-scratch",
+          "POST scratch",
+          "POST project",
+          "POST project-pin",
+          "POST project-delete",
+          "POST session",
+          "GET reuse",
+          "GET browse",
+          "GET recent"
+        ],
+        "client": "owner",
+        "access": "owner"
       }
     }
   ]

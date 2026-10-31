@@ -1,0 +1,402 @@
+/* Annotate: a sheet with a canvas, a pen, and nothing else. It uses the app's colors, which follow the theme. */
+
+/* The images attached in the message box: a tile of the picture itself, with only the remove button on it. A tap
+ * on a tile opens it here. */
+.chip.with-thumb {
+    position: relative;
+    width: 92px;
+    height: 92px;
+    padding: 0;
+    gap: 0;
+    overflow: hidden;
+    border-radius: 14px;
+    background: var(--card-2);
+    cursor: zoom-in;
+}
+
+.chip.with-thumb .chip-thumb {
+    width: 100%;
+    height: 100%;
+    border-radius: 14px;
+    object-fit: cover;
+}
+
+.chip.with-thumb .chip-name,
+.chip.with-thumb > span.muted {
+    display: none;
+}
+
+/* The spinner while the app uploads the file, and the remove button, over the picture. */
+.chip.with-thumb > :not(img):not(button) {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.chip.with-thumb > button {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    display: grid;
+    place-items: center;
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.55);
+    color: #fff;
+    cursor: pointer;
+    backdrop-filter: blur(4px);
+}
+
+.ann-root {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    height: 100%;
+    /* A sheet is as tall as what it holds: ask for room to draw in. */
+    min-height: min(70dvh, 620px);
+    min-height: min(70vh, 620px);
+}
+
+/* Choosing an image */
+
+.ann-drop {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    padding: 18px 16px;
+    border-radius: 16px;
+    border: 1px dashed var(--line);
+    background: var(--card);
+    color: var(--text);
+    text-align: left;
+    font: inherit;
+    cursor: pointer;
+}
+
+.ann-drop:hover {
+    border-color: var(--accent);
+}
+
+.ann-drop-icon {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--accent) 16%, transparent);
+    color: var(--accent);
+}
+
+.ann-sub {
+    display: block;
+    margin-top: 2px;
+    font-size: 13px;
+    color: var(--muted);
+}
+
+.ann-hint {
+    margin: 0 2px;
+    font-size: 13px;
+    color: var(--muted);
+}
+
+.ann-heading {
+    margin: 6px 2px 0;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--muted);
+}
+
+.ann-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(74px, 1fr));
+    gap: 8px;
+}
+
+.ann-thumb {
+    padding: 0;
+    aspect-ratio: 1;
+    overflow: hidden;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: var(--card);
+    cursor: pointer;
+}
+
+.ann-thumb img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* The picture */
+
+.ann-stage {
+    position: relative;
+    flex: 1 1 auto;
+    min-height: 190px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    border-radius: 16px;
+}
+
+.ann-canvas {
+    display: block;
+    border-radius: 12px;
+    touch-action: pan-y;
+    -webkit-user-select: none;
+    user-select: none;
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.04), 0 6px 18px rgba(0, 0, 0, 0.16);
+}
+
+.ann-canvas.draw {
+    touch-action: none;
+    cursor: crosshair;
+}
+
+.ann-corner {
+    position: absolute;
+    top: 10px;
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    border: 1px solid var(--line);
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--bg) 84%, transparent);
+    color: var(--text);
+    cursor: pointer;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.18);
+    backdrop-filter: blur(8px);
+}
+
+.ann-corner.left {
+    left: 10px;
+}
+
+.ann-corner.right {
+    right: 10px;
+}
+
+.ann-corner.apply {
+    border-color: var(--accent);
+    background: var(--accent);
+    color: #fff;
+}
+
+.ann-corner:disabled {
+    opacity: 0.6;
+    cursor: default;
+}
+
+/* The ✕ of the picker: the same button, in the flow. */
+.ann-plain-corner {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    margin-right: auto;
+    padding: 0;
+    border: 1px solid var(--line);
+    border-radius: 50%;
+    background: var(--card);
+    color: var(--text);
+    cursor: pointer;
+}
+
+.ann-count {
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
+    padding: 3px 9px;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--bg) 82%, transparent);
+    color: var(--muted);
+    font-size: 12px;
+}
+
+/* The pen, and the note */
+
+.ann-panel {
+    display: flex;
+    flex: none;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.ann-line {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.ann-tools {
+    display: none;
+    gap: 4px;
+}
+
+.ann-tool {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--card);
+    color: var(--text);
+    cursor: pointer;
+}
+
+.ann-tool.on {
+    border-color: var(--accent);
+    background: color-mix(in srgb, var(--accent) 14%, transparent);
+    color: var(--accent);
+}
+
+.ann-colors {
+    display: flex;
+    gap: 6px;
+    margin-right: auto;
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+
+.ann-colors::-webkit-scrollbar {
+    display: none;
+}
+
+.ann-color {
+    flex: none;
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    border: 2px solid transparent;
+    border-radius: 50%;
+    background: var(--ann-color);
+    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.22);
+    cursor: pointer;
+}
+
+.ann-color.on {
+    border-color: var(--text);
+}
+
+.ann-widths {
+    display: flex;
+    gap: 4px;
+}
+
+.ann-width {
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--card);
+    cursor: pointer;
+}
+
+.ann-width span {
+    display: block;
+    border-radius: 50%;
+    background: var(--text);
+}
+
+.ann-width.on {
+    border-color: var(--accent);
+    background: color-mix(in srgb, var(--accent) 14%, transparent);
+}
+
+.ann-icon {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: var(--card);
+    color: var(--text);
+    cursor: pointer;
+}
+
+.ann-icon:disabled {
+    opacity: 0.4;
+    cursor: default;
+}
+
+.ann-done {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-left: auto;
+}
+
+/* The message box's row on a narrow box: the model keeps its name and gives up its thinking level, as the app does
+ * at 340px, so nothing in the row runs over what comes after it. Remove these lines to keep the app's own layout. */
+@container composer (max-width: 360px) {
+    .model-chip .model-level {
+        display: none;
+    }
+}
+
+/* A wider screen (a laptop, an iPad): the sheet takes more room, the canvas gets taller, and the rectangle tool joins
+ * the pen. Below this width, a phone keeps the pen alone. */
+@media (min-width: 700px) {
+    .sheet:has(.ann-root) {
+        max-width: min(1120px, 94vw);
+        max-height: 92dvh;
+    }
+
+    .ann-root {
+        min-height: min(74dvh, 700px);
+    }
+
+    .ann-tools {
+        display: flex;
+        margin-right: 2px;
+    }
+}
+
+/* The sheet has no head of its own here: the picture fills it, and its buttons sit in the corners of the picture. It
+ * looks the same on a phone and on a laptop. */
+.sheet:has(.ann-root) .sheet-head {
+    display: none;
+}
+
+.sheet:has(.ann-root) .sheet-body {
+    padding-top: calc(12px + env(safe-area-inset-top));
+}
+
+/* Closing: the sheet slides down as a sheet does on an iPhone — a touch slower than the app's own (0.2s) close, and
+ * it leaves from rest: it gathers speed, then settles at the bottom edge. The scrim fades with it. */
+.sheet:has(.ann-root.leaving) {
+    transform: translateY(100%);
+    transition: transform 380ms cubic-bezier(0.4, 0, 0.55, 1);
+}
+
+.overlay:has(.ann-root.leaving) {
+    background-color: transparent;
+    transition: background-color 380ms ease-out;
+}
+
+.ann-root.leaving {
+    pointer-events: none;
+}

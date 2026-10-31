@@ -1,0 +1,7 @@
+# Made on the machine that runs the extension
+mcp-servers/cache.json
+projects/state.json
+lsp-tools/
+_pocket.d.ts
+*.gallery.json
+node_modules/
